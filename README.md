@@ -41,9 +41,10 @@ Remember that you need sufficiently high powers of tau ceremony to generate a pr
 To get a sample r1cs file from `semaphore-mtb`, checkout the [`semaphore-mtb` repository](https://github.com/worldcoin/semaphore-mtb.git) and run the following command:
 
 ```bash
-git clone https://github.com/worldcoin/semaphore-mtb.git && git checkout wip/mk/r1cs-export
+git clone https://github.com/worldcoin/semaphore-mtb.git
 go build
-./gnark-mbu r1cs --tree-depth=10 --batch-size=15 --output=demo_smtb.r1cs
+./gnark-mbu r1cs --mode insertion --tree-depth=10 --batch-size=15 --output=demo_insertion_smtb.r1cs
+./gnark-mbu r1cs --mode deletion --tree-depth=10 --batch-size=15 --output=demo_deletion_smtb.r1cs
 ```
 
 Move the file to into `deserialize` directory:
