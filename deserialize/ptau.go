@@ -67,8 +67,10 @@ contributions(7) - Ignore contributions, users can verify using snarkjs
 // in bytes
 const BN254_FIELD_ELEMENT_SIZE = 32
 
-type G1 [2]big.Int
-type G2 [4]big.Int
+type (
+	G1 [2]big.Int
+	G2 [4]big.Int
+)
 
 type PtauHeader struct {
 	N8    uint32
@@ -97,12 +99,11 @@ type PtauFile struct {
 
 func InitPtau(path string) (*PtauFile, error) {
 	reader, err := os.Open(path)
-
 	if err != nil {
 		return nil, err
 	}
 
-	var ptauStr = make([]byte, 4)
+	ptauStr := make([]byte, 4)
 	_, err = reader.Read(ptauStr)
 
 	fmt.Printf("zkeyStr: %s \n", string(ptauStr))
@@ -142,7 +143,6 @@ func InitPtau(path string) (*PtauFile, error) {
 
 	// Read header
 	header, err := readPtauHeader(reader)
-
 	if err != nil {
 		return nil, err
 	}
@@ -255,14 +255,13 @@ func (ptauFile *PtauFile) ReadBetaG2() (bn254.G2Affine, error) {
 
 func ReadPtau(zkeyPath string) (Ptau, error) {
 	reader, err := os.Open(zkeyPath)
-
 	if err != nil {
 		return Ptau{}, err
 	}
 
 	defer reader.Close()
 
-	var ptauStr = make([]byte, 4)
+	ptauStr := make([]byte, 4)
 	_, err = reader.Read(ptauStr)
 
 	fmt.Printf("zkeyStr: %s \n", string(ptauStr))
@@ -302,7 +301,6 @@ func ReadPtau(zkeyPath string) (Ptau, error) {
 
 	// Read header
 	header, err := readPtauHeader(reader)
-
 	if err != nil {
 		return Ptau{}, err
 	}
@@ -317,7 +315,6 @@ func ReadPtau(zkeyPath string) (Ptau, error) {
 	fmt.Printf("tauG1: \n")
 
 	PtauPubKey.TauG1, err = readG1Array(reader, twoToPower*2-1)
-
 	if err != nil {
 		return Ptau{}, err
 	}
@@ -328,7 +325,6 @@ func ReadPtau(zkeyPath string) (Ptau, error) {
 	fmt.Printf("tauG2: \n")
 
 	PtauPubKey.TauG2, err = readG2Array(reader, twoToPower)
-
 	if err != nil {
 		return Ptau{}, err
 	}
@@ -339,7 +335,6 @@ func ReadPtau(zkeyPath string) (Ptau, error) {
 	fmt.Printf("alphaTauG1: \n")
 
 	PtauPubKey.AlphaTauG1, err = readG1Array(reader, twoToPower)
-
 	if err != nil {
 		return Ptau{}, err
 	}
@@ -350,7 +345,6 @@ func ReadPtau(zkeyPath string) (Ptau, error) {
 	fmt.Printf("betaTauG1: \n")
 
 	PtauPubKey.BetaTauG1, err = readG1Array(reader, twoToPower)
-
 	if err != nil {
 		return Ptau{}, err
 	}
@@ -361,7 +355,6 @@ func ReadPtau(zkeyPath string) (Ptau, error) {
 	fmt.Printf("betaG2: \n")
 
 	PtauPubKey.BetaG2, err = readG2(reader)
-
 	if err != nil {
 		return Ptau{}, err
 	}
@@ -373,7 +366,6 @@ func readPtauHeader(reader io.ReadSeeker) (PtauHeader, error) {
 	var header PtauHeader
 
 	n8, err := readULE32(reader)
-
 	if err != nil {
 		return PtauHeader{}, err
 	}
@@ -381,7 +373,6 @@ func readPtauHeader(reader io.ReadSeeker) (PtauHeader, error) {
 	header.N8 = n8
 
 	prime, err := readBigInt(reader, n8)
-
 	if err != nil {
 		return PtauHeader{}, err
 	}
@@ -389,7 +380,6 @@ func readPtauHeader(reader io.ReadSeeker) (PtauHeader, error) {
 	header.Prime = prime
 
 	power, err := readULE32(reader)
-
 	if err != nil {
 		return PtauHeader{}, err
 	}
@@ -403,7 +393,6 @@ func readG1Array(reader io.ReadSeeker, numPoints uint32) ([]G1, error) {
 	g1s := make([]G1, numPoints)
 	for i := uint32(0); i < numPoints; i++ {
 		g1, err := readG1(reader)
-
 		if err != nil {
 			return []G1{}, err
 		}
@@ -418,7 +407,6 @@ func readG2Array(reader io.ReadSeeker, numPoints uint32) ([]G2, error) {
 
 	for i := uint32(0); i < numPoints; i++ {
 		g2, err := readG2(reader)
-
 		if err != nil {
 			return []G2{}, err
 		}
@@ -431,13 +419,11 @@ func readG2Array(reader io.ReadSeeker, numPoints uint32) ([]G2, error) {
 
 func readTauG2(reader io.ReadSeeker) ([]G2, error) {
 	tauG2_s, err := readG2(reader)
-
 	if err != nil {
 		return []G2{}, err
 	}
 
 	tauG2_sx, err := readG2(reader)
-
 	if err != nil {
 		return []G2{}, err
 	}
@@ -449,7 +435,6 @@ func readG1(reader io.ReadSeeker) (G1, error) {
 	var g1 G1
 
 	x, err := readBigInt(reader, BN254_FIELD_ELEMENT_SIZE)
-
 	if err != nil {
 		return G1{}, err
 	}
@@ -457,7 +442,6 @@ func readG1(reader io.ReadSeeker) (G1, error) {
 	g1[0] = x
 
 	y, err := readBigInt(reader, BN254_FIELD_ELEMENT_SIZE)
-
 	if err != nil {
 		return G1{}, err
 	}
@@ -471,7 +455,6 @@ func readG2(reader io.ReadSeeker) (G2, error) {
 	var g2 G2
 
 	x0, err := readBigInt(reader, BN254_FIELD_ELEMENT_SIZE)
-
 	if err != nil {
 		return G2{}, err
 	}
@@ -479,7 +462,6 @@ func readG2(reader io.ReadSeeker) (G2, error) {
 	g2[0] = x0
 
 	x1, err := readBigInt(reader, BN254_FIELD_ELEMENT_SIZE)
-
 	if err != nil {
 		return G2{}, err
 	}
@@ -487,7 +469,6 @@ func readG2(reader io.ReadSeeker) (G2, error) {
 	g2[1] = x1
 
 	y0, err := readBigInt(reader, BN254_FIELD_ELEMENT_SIZE)
-
 	if err != nil {
 		return G2{}, err
 	}
@@ -495,7 +476,6 @@ func readG2(reader io.ReadSeeker) (G2, error) {
 	g2[2] = y0
 
 	y1, err := readBigInt(reader, BN254_FIELD_ELEMENT_SIZE)
-
 	if err != nil {
 		return G2{}, err
 	}

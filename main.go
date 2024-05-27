@@ -33,7 +33,7 @@ func main() {
 						panic(err)
 					}
 
-					//ptau, err := deserializer.ReadPtau(ptauFilePath)
+					// ptau, err := deserializer.ReadPtau(ptauFilePath)
 
 					//if err != nil {
 					//	return err

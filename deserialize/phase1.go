@@ -3,22 +3,14 @@ package deserializer
 import (
 	"bufio"
 	"fmt"
-	"math"
 	"os"
 
 	"github.com/consensys/gnark-crypto/ecc/bn254"
 	curve "github.com/consensys/gnark-crypto/ecc/bn254"
+	"github.com/consensys/gnark/backend/groth16/bn254/mpcsetup"
 )
 
-type Phase1 struct {
-	tauG1      []curve.G1Affine
-	alphaTauG1 []curve.G1Affine
-	betaTauG1  []curve.G1Affine
-	tauG2      []curve.G2Affine
-	betaG2     curve.G2Affine
-}
-
-func ConvertPtauToPhase1(ptau Ptau) (phase1 Phase1, err error) {
+func ConvertPtauToPhase1(ptau Ptau) (phase1 mpcsetup.Phase1, err error) {
 	tauG1 := make([]curve.G1Affine, len(ptau.PTauPubKey.TauG1))
 	for i, g1 := range ptau.PTauPubKey.TauG1 {
 		g1Affine := curve.G1Affine{}
@@ -112,9 +104,13 @@ func ConvertPtauToPhase1(ptau Ptau) (phase1 Phase1, err error) {
 		}
 	}
 
-	//fmt.Printf("BetaG2: %v \n", BetaG2)
+	phase1.Parameters.G1.Tau = tauG1
+	phase1.Parameters.G1.AlphaTau = alphaTauG1
+	phase1.Parameters.G1.BetaTau = betaTauG1
+	phase1.Parameters.G2.Tau = tauG2
+	phase1.Parameters.G2.Beta = betaG2
 
-	return Phase1{tauG1: tauG1, tauG2: tauG2, alphaTauG1: alphaTauG1, betaTauG1: betaTauG1, betaG2: betaG2}, nil
+	return phase1, nil
 }
 
 func WritePhase1FromPtauFile(ptauFile *PtauFile, outputPath string) error {
@@ -193,75 +189,5 @@ func WritePhase1FromPtauFile(ptauFile *PtauFile, outputPath string) error {
 		return err
 	}
 	enc.Encode(&betaG2)
-	return nil
-}
-
-func WritePhase1(phase1 Phase1, power byte, outputPath string) error {
-	// output outputFile
-	outputFile, err := os.Create(outputPath)
-	if err != nil {
-		return err
-	}
-	defer outputFile.Close()
-
-	var header Header
-
-	writer := bufio.NewWriter(outputFile)
-	defer writer.Flush()
-
-	N := int(math.Pow(2, float64(power)))
-
-	fmt.Printf("Power %d supports up to %d constraints\n", power, N)
-
-	header.Power = power
-
-	// can be extracted from ptau.Contributions (7) but hardcoding for now
-	// ptau link: https://github.com/iden3/snarkjs/tree/master#7-prepare-phase-2
-	header.Contributions = 54
-
-	// Write the header
-	header.writeTo(outputFile)
-
-	// BN254 encoder using compressed representation of points to save storage space
-	enc := bn254.NewEncoder(writer)
-
-	// Taken from https://github.com/worldcoin/semaphore-mtb-setup/blob/main/phase1/phase1.go
-	// In the initialization, τ = α = β = 1, so we are writing the generators directly
-	// Write [τ⁰]₁, [τ¹]₁, [τ²]₁, …, [τ²ᴺ⁻²]₁
-	fmt.Println("1. Writing TauG1")
-	for i := 0; i < 2*N-1; i++ {
-		if err := enc.Encode(&phase1.tauG1[i]); err != nil {
-			return err
-		}
-	}
-
-	// Write α[τ⁰]₁, α[τ¹]₁, α[τ²]₁, …, α[τᴺ⁻¹]₁
-	fmt.Println("2. Writing AlphaTauG1")
-	for i := 0; i < N; i++ {
-		if err := enc.Encode(&phase1.alphaTauG1[i]); err != nil {
-			return err
-		}
-	}
-
-	// Write β[τ⁰]₁, β[τ¹]₁, β[τ²]₁, …, β[τᴺ⁻¹]₁
-	fmt.Println("3. Writing BetaTauG1")
-	for i := 0; i < N; i++ {
-		if err := enc.Encode(&phase1.betaTauG1[i]); err != nil {
-			return err
-		}
-	}
-
-	// Write {[τ⁰]₂, [τ¹]₂, [τ²]₂, …, [τᴺ⁻¹]₂}
-	fmt.Println("4. Writing TauG2")
-	for i := 0; i < N; i++ {
-		if err := enc.Encode(&phase1.tauG2[i]); err != nil {
-			return err
-		}
-	}
-
-	// Write [β]₂
-	fmt.Println("5. Writing BetaG2")
-	enc.Encode(&phase1.betaG2)
-
 	return nil
 }

@@ -91,37 +91,6 @@ func TestSerializeR1CS(t *testing.T) {
 	assert.NoError(err)
 }
 
-func TestDeserializePtauConvertPhase1(t *testing.T) {
-	assert := require.New(t)
-
-	input_path := "08.ptau"
-
-	ptau, err := ReadPtau(input_path)
-
-	if err != nil {
-		assert.NoError(err)
-	}
-
-	phase1, err := ConvertPtauToPhase1(ptau)
-
-	if err != nil {
-		assert.NoError(err)
-	}
-
-	fmt.Printf("TauG1: %v \n", phase1.tauG1)
-	fmt.Printf("AlphaTauG1: %v \n", phase1.alphaTauG1)
-	fmt.Printf("BetaTauG1: %v \n", phase1.betaTauG1)
-	fmt.Printf("TauG2: %v \n", phase1.tauG2)
-	fmt.Printf("BetaG2: %v \n", phase1.betaG2)
-
-	// Write phase1 to file
-	err = WritePhase1(phase1, uint8(ptau.Header.Power), "08.ph1")
-
-	if err != nil {
-		assert.NoError(err)
-	}
-}
-
 ///////////////////////////////////////////////////////////////////
 ///                             ZKEY                            ///
 ///////////////////////////////////////////////////////////////////
@@ -158,7 +127,6 @@ func TestDeserializerZkey(t *testing.T) {
 	assert := require.New(t)
 
 	zkey, err := ReadZkey(input_path)
-
 	if err != nil {
 		assert.NoError(err)
 	}
