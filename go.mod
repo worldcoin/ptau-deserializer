@@ -1,6 +1,6 @@
 module github.com/worldcoin/ptau-deserializer
 
-go 1.22
+go 1.22.0
 
 require github.com/consensys/gnark v0.10.0
 
