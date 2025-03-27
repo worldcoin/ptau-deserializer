@@ -27,7 +27,8 @@ wget https://www.trusted-setup-pse.org/semaphore/16/semaphore.zkey -O deserializ
 Download the `.ptau` file from the [`snarkjs` repository](https://github.com/iden3/snarkjs#7-prepare-phase-2) by running the following command:
 
 ```bash
-wget https://hermez.s3-eu-west-1.amazonaws.com/powersOfTau28_hez_final_08.ptau -O deserialize/08.ptau
+# bucket has been deleted
+# wget # https://hermez.s3-eu-west-1.amazonaws.com/powersOfTau28_hez_final_08.ptau -O deserialize/08.ptau
 ```
 
 For larger `.ptau` files, checkout the `snarkjs` repository's [README](https://github.com/iden3/snarkjs/tree/master#7-prepare-phase-2) for more information.
