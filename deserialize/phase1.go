@@ -4,11 +4,48 @@ import (
 	"bufio"
 	"fmt"
 	"os"
+	"reflect"
+	"unsafe"
 
 	"github.com/consensys/gnark-crypto/ecc/bn254"
 	curve "github.com/consensys/gnark-crypto/ecc/bn254"
 	"github.com/consensys/gnark/backend/groth16/bn254/mpcsetup"
 )
+
+func setPhase1(
+	phase1 *mpcsetup.Phase1, tauG1 []curve.G1Affine, alphaTauG1 []curve.G1Affine,
+	betaTauG1 []curve.G1Affine, tauG2 []curve.G2Affine, betaG2 curve.G2Affine,
+) {
+	v := reflect.ValueOf(phase1).Elem()
+	params := v.FieldByName("parameters")
+	g1 := params.FieldByName("G1")
+	g2 := params.FieldByName("G2")
+
+	tauG1Val := reflect.ValueOf(tauG1)
+	reflect.NewAt(
+		g1.FieldByName("Tau").Type(), unsafe.Pointer(g1.FieldByName("Tau").UnsafeAddr()),
+	).Elem().Set(tauG1Val)
+
+	alphaTauG1Val := reflect.ValueOf(alphaTauG1)
+	reflect.NewAt(
+		g1.FieldByName("AlphaTau").Type(), unsafe.Pointer(g1.FieldByName("AlphaTau").UnsafeAddr()),
+	).Elem().Set(alphaTauG1Val)
+
+	betaTauG1Val := reflect.ValueOf(betaTauG1)
+	reflect.NewAt(
+		g1.FieldByName("BetaTau").Type(), unsafe.Pointer(g1.FieldByName("BetaTau").UnsafeAddr()),
+	).Elem().Set(betaTauG1Val)
+
+	tauG2Val := reflect.ValueOf(tauG2)
+	reflect.NewAt(
+		g2.FieldByName("Tau").Type(), unsafe.Pointer(g2.FieldByName("Tau").UnsafeAddr()),
+	).Elem().Set(tauG2Val)
+
+	betaG2Val := reflect.ValueOf(betaG2)
+	reflect.NewAt(
+		g2.FieldByName("Beta").Type(), unsafe.Pointer(g2.FieldByName("Beta").UnsafeAddr()),
+	).Elem().Set(betaG2Val)
+}
 
 func ConvertPtauToPhase1(ptau Ptau) (phase1 mpcsetup.Phase1, err error) {
 	tauG1 := make([]curve.G1Affine, len(ptau.PTauPubKey.TauG1))
@@ -104,11 +141,7 @@ func ConvertPtauToPhase1(ptau Ptau) (phase1 mpcsetup.Phase1, err error) {
 		}
 	}
 
-	phase1.Parameters.G1.Tau = tauG1
-	phase1.Parameters.G1.AlphaTau = alphaTauG1
-	phase1.Parameters.G1.BetaTau = betaTauG1
-	phase1.Parameters.G2.Tau = tauG2
-	phase1.Parameters.G2.Beta = betaG2
+	setPhase1(&phase1, tauG1, alphaTauG1, betaTauG1, tauG2, betaG2)
 
 	return phase1, nil
 }
